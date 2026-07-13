@@ -1,0 +1,8 @@
+Title,Section,Steps,Expected Result,Preconditions,References
+"{{testcaseName}}","","1. Open the application
+2. Navigate to the login page
+3. Fill in the email and password fields
+4. Click the login button","1. Application is opened
+2. Login form is displayed
+3. The credentials are filled in
+4. User is logged in","Testcase preconditions","{{testcaseStory}}"

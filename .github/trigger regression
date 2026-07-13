@@ -1,0 +1,16 @@
+name: Trigger Full Regression
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger automation
+      run: |
+        curl -X POST \
+          -H "Authorization: token ${{ secrets.AUTOMATION_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/AndreiDediu189/automation/dispatches \
+          -d '{"event_type":"run-regression"}'

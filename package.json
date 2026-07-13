@@ -1,0 +1,22 @@
+{
+  "name": "automation",
+  "version": "1.0.0",
+  "description": "Playwright automation test suite",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "codegen": "playwright codegen"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/node": "^22.0.0",
+    "allure-commandline": "^2.42.0",
+    "allure-playwright": "^3.9.0",
+    "dotenv": "^17.4.2",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "mailosaur": "^11.1.1"
+  }
+}
