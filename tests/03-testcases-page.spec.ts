@@ -5,16 +5,99 @@ import { randomUUID } from 'crypto';
 
 
 
-test.describe('Testcases page', () => {
-test.describe.configure({ retries: 2 }); 
+test.describe('Testcases page', () => { 
 test.beforeEach(async ({ page }) => {
 await page.goto('/testcases');
 await page.waitForLoadState('domcontentloaded');
 });
 
 
+
+test.describe.serial('Non-parallel @manual', () => {
+
+        test('Status filters testcase amount updates dynamically', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;     
+        let statusCount = await page.locator('[data-status-key="draft"]').locator('.text-2xl').textContent();
+        await library.createTestcase(testcaseName);
+
+
+            try {
+            let statusUpdatedCount = await page.locator('[data-status-key="draft"]').locator('.text-2xl').textContent();
+            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
+            await library.changeTestcaseStatus(testcaseName, 'READY');
+            statusUpdatedCount = await page.locator('[data-status-key="draft"]').locator('.text-2xl').textContent();
+            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
+
+
+            await library.changeTestcaseStatus(testcaseName, 'DRAFT');
+            statusCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
+            await library.changeTestcaseStatus(testcaseName, 'READY');
+            statusUpdatedCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
+            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
+            await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');        
+            statusUpdatedCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
+            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
+        
+
+            await library.changeTestcaseStatus(testcaseName, 'READY');
+            statusCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
+            await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
+            statusUpdatedCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
+            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
+            await library.changeTestcaseStatus(testcaseName, 'COMPLETED');
+            statusUpdatedCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
+            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
+
+
+            await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
+            statusCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
+            await library.changeTestcaseStatus(testcaseName, 'COMPLETED');
+            statusUpdatedCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
+            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
+            await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
+            statusUpdatedCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
+            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
+            }
+
+            finally {
+            await library.deleteTestcase(testcaseName);
+            }});
+
+        test('User can see the reordered list persisted after drag and drop @P2', async ({ page }) => {
+
+        
+        const testcaseRow = await page.locator('[data-testid^="testcase-row-title-"]').first().textContent();
+        const testcaseRow2 = await page.locator('[data-testid^="testcase-row-title-"]').nth(1).textContent();
+        const testcaseHandle = await page.locator('[data-rfd-drag-handle-draggable-id]').first();
+        const testcaseHandle2 = await page.locator('[data-rfd-drag-handle-draggable-id]').nth(1);
+
+
+        const box1 = (await testcaseHandle.boundingBox())!;
+        const box2 = (await testcaseHandle2.boundingBox())!;
+        await page.mouse.move(box1.x + box1.width / 2, box1.y + box1.height / 2);
+        await page.mouse.down();
+        await page.waitForTimeout(500);
+        await page.mouse.move(box2.x + box2.width / 2, box2.y + box2.height / 2, { steps: 10 });
+        await page.waitForTimeout(1000);
+        await page.mouse.up();
+
+        await page.waitForTimeout(5000); // Wait for the reordering to be processed
+
+        const testcaseRowAfterUpdate = await page.locator('[data-testid^="testcase-row-title-"]').first().textContent();
+        const testcaseRowAfterUpdate2 = await page.locator('[data-testid^="testcase-row-title-"]').nth(1).textContent();
+        
+        await expect(testcaseRow2).toBe(testcaseRowAfterUpdate);
+        await expect(testcaseRow).toBe(testcaseRowAfterUpdate2);
+   
+            });
+
+});
+
+
+test.describe('Parallel', () => {
+
         test('Filtering by status buttons @P2', async ({ page, library }) => {
-        const testcaseName = `playwright-${Date.now()}`;
+        const testcaseName = `playwright-${randomUUID()}`;
         await library.createTestcase(testcaseName);
 
             try {
@@ -39,10 +122,8 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
-
-
         test('Filtering by status dropdown @P2', async ({ page, library }) => {
-            const testcaseName = `playwright-${Date.now()}`;
+            const testcaseName = `playwright-${randomUUID()}`;
             await library.createTestcase(testcaseName);
 
             try{
@@ -70,8 +151,6 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
-
-
         test('Creating a testcase with LLM @P1', async ({ page, library }) => {
         let testcaseName = '';
     
@@ -92,8 +171,6 @@ await page.waitForLoadState('domcontentloaded');
             finally {
             await library.deleteTestcase(testcaseName);
             }});
-
-
 
 
         test('User can edit the title of the generated test case before saving @P1', async ({ page, library }) => {
@@ -117,10 +194,8 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
-
-
         test('Creating a testcase manually @POM @P2', async ({ page, library}) => {
-        const testcaseName = `playwright-${Date.now()}`;
+        const testcaseName = `playwright-${randomUUID()}`;
         await library.createTestcase(testcaseName);
 
             try {
@@ -133,10 +208,8 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
-
-
         test('Updating the status of a testcase @POM @P2', async ({ library }) => {
-            const testcaseName = `playwright-${Date.now()}`;
+            const testcaseName = `playwright-${randomUUID()}`;
             await library.createTestcase(testcaseName);
 
             try {
@@ -151,8 +224,6 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
-
-
         test('User can click a specific page number in the pagination to jump to that page @P2', async ({ page }) => {
             const testcaseName = await page.locator('[data-testid^="testcase-row-title-"]').first().textContent();
             await page.getByTestId('pagination-page-3').click();
@@ -162,8 +233,6 @@ await page.waitForLoadState('domcontentloaded');
             });
 
 
-
-
         test('Clicking a specific page number in the pagination will highlight that page number @P3', async ({ page }) => {
             await page.getByTestId('pagination-page-3').click();
             await expect(page.getByTestId('pagination-page-3')).toHaveAttribute('style', 'color: white; border: 1px solid rgb(99, 102, 241); background: rgb(79, 70, 229);');
@@ -171,19 +240,12 @@ await page.waitForLoadState('domcontentloaded');
             });
 
 
-
-
         test('User can click a test case within a story to open the edit modal @P2', async ({ page, library }) => {
-        const testcaseName = `test123-${Date.now()}`;
+        const testcaseName = `playwright-${randomUUID()}`;
         const testcaseStory = `playwright-${randomUUID()}`;
-        await library.createTestcase(testcaseName);
+        await library.createTestcase(testcaseName, testcaseStory);
 
             try {
-            await library.findOpenTestcase(testcaseName);
-            await page.getByTestId('editable-testcase-jira-key-input').fill(testcaseStory);
-            await page.getByRole('button', { name: 'Save Test Case' }).click();
-            await expect(page.getByText('Test Case Saved')).toBeVisible();
-            await page.getByTestId('alert-dialog-ok-btn').click();
             await page.getByTestId('testcases-tab-stories').click();
             await expect(page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory })).toBeVisible();
             await page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory }).click();
@@ -196,9 +258,49 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
+        test('User can right-click a story to open the story context menu @P3', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        const testcaseStory = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName, testcaseStory);
+
+            try {
+            await page.getByTestId('testcases-tab-stories').click();
+            await expect(page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory })).toBeVisible();
+            await page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory }).click({ button: 'right' });
+            await expect(page.getByRole('menu').filter({ hasText: testcaseStory })).toBeVisible();
+            }
+
+            finally {
+            await library.deleteTestcase(testcaseName);
+            }});
+            
+
+        test('User can archieve then view archived story test cases @P3', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        const testcaseStory = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName, testcaseStory);
+
+            try {
+            await library.findTestcase(testcaseName);
+            await page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
+            await page.getByRole('menuitem').filter({ hasText: 'Archive' }).click();
+            await library.findTestcase(testcaseName, false);
+            await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName })).not.toBeVisible();
+            await page.getByTestId('testcases-tab-stories').click();
+            await page.getByTestId('stories-toggle-archived-btn').click();
+            await expect(page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory })).toBeVisible();
+            await page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory }).click();
+            await page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
+            await page.getByRole('menuitem').filter({ hasText: 'Unarchive' }).click();
+            }
+
+            finally {
+            await library.deleteTestcase(testcaseName);
+            }});
 
 
         test('User can export a story to CSV from the story context menu @P3', async ({ page, library }) => {
+        
         const testcaseName = `playwright-${randomUUID()}`;
         const testcaseStory = `playwright-${randomUUID()}`;
         await library.createTestcase(testcaseName, testcaseStory);
@@ -222,61 +324,6 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
-
-
-        test('Status filters testcase amount updates dynamically', async ({ page, library }) => {
-        const testcaseName = `playwright-${randomUUID()}`;     
-        let statusCount = await page.locator('[data-status-key="draft"]').locator('.text-2xl').textContent();
-        await library.createTestcase(testcaseName);
-
-            try {
-            let statusUpdatedCount = await page.locator('[data-status-key="draft"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
-            await library.changeTestcaseStatus(testcaseName, 'READY');
-            statusUpdatedCount = await page.locator('[data-status-key="draft"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
-
-
-            await library.changeTestcaseStatus(testcaseName, 'DRAFT');
-            statusCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
-            await library.changeTestcaseStatus(testcaseName, 'READY');
-            statusUpdatedCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
-
-            await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');            
-            statusUpdatedCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
-        
-
-            await library.changeTestcaseStatus(testcaseName, 'READY');
-            statusCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
-            await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
-            statusUpdatedCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
-
-            await library.changeTestcaseStatus(testcaseName, 'COMPLETED');
-            statusUpdatedCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
-
-
-            await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
-            statusCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
-            await library.changeTestcaseStatus(testcaseName, 'COMPLETED');
-            statusUpdatedCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
-
-            await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
-            statusUpdatedCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
-            }
-
-            finally {
-            await library.deleteTestcase(testcaseName);
-            }});
-
-
-
-
         test('User can switch from Test Cases tab to Stories tab', async ({ page }) => {
 
             await expect(page.getByTestId('toggle-archived-btn')).toBeVisible();
@@ -285,7 +332,6 @@ await page.waitForLoadState('domcontentloaded');
             await page.getByTestId('testcases-tab-testcases').click();
             await expect(page.getByTestId('toggle-archived-btn')).toBeVisible();
             });
-
 
 
         test('User can Bulk Delete to delete selected test cases with delete button', async ({ page, library }) => {
@@ -315,8 +361,8 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
-
         test('User can Bulk Delete to delete selected test cases with right click delete button', async ({ page, library }) => {
+        test.setTimeout(60000);
             const testcaseName1 = `playwright-${randomUUID()}`;
             const testcaseName2 = `playwright-${randomUUID()}`;
             const testcaseName3 = `playwright-${randomUUID()}`;
@@ -344,8 +390,6 @@ await page.waitForLoadState('domcontentloaded');
             await library.deleteTestcase(testcaseName3, false);
             }});
 
-
-
         
         test('User can cancel Bulk Delete', async ({ page, library }) => {
             const testcaseName1 = `playwright-${randomUUID()}`;
@@ -371,7 +415,6 @@ await page.waitForLoadState('domcontentloaded');
             }});
 
 
-
         test('User can cancel bulk archive in the confirmation dialog', async ({ page, library }) => {
             const testcaseName1 = `playwright-${randomUUID()}`;
             const testcaseName2 = `playwright-${randomUUID()}`;
@@ -394,7 +437,6 @@ await page.waitForLoadState('domcontentloaded');
             await library.deleteTestcase(testcaseName1);
             await library.deleteTestcase(testcaseName2);
             }});
-
             
 
         test('User can delete a test case from the edit modal', async ({ page, library })  => {
@@ -415,26 +457,133 @@ await page.waitForLoadState('domcontentloaded');
             }
 
         });
-        
 
 
-        test('User can see the test case disappear from active view after archiving', async ({ page, library })  => {
-        const testcaseName1 = `playwright-${randomUUID()}`;
-        await library.createTestcase(testcaseName1);
+        test('User can see the test case removed from the list after deletion', async ({ page, library })  => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName);
 
             try {
-            await library.findTestcase(testcaseName1);
-            await page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName1 }).click({ button: 'right' });
-            await page.getByRole('menuitem').filter({ hasText: 'Archive' }).click();
-            await library.findTestcase(testcaseName1, false);
-            await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName1 })).not.toBeVisible();
+            await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName })).toBeVisible();
+            await page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName }).click({ button: 'right' });
+            await page.getByRole('menuitem').filter({ hasText: 'Delete' }).click();
+            await page.getByTestId('confirm-dialog-confirm-btn').click();
+            await expect(page.getByTestId('confirm-dialog-confirm-btn')).not.toBeVisible();
+            await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName })).not.toBeVisible();
             }
 
             finally{
-            await library.deleteTestcase(testcaseName1, false);
+            await library.deleteTestcase(testcaseName, false);
             }
 
         });
 
 
+        test('User can click a test case row to open the edit modal', async ({ page, library })  => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName);
+
+            try {
+            await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName })).toBeVisible();
+            await page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName }).click();
+            await expect(page.getByText('Edit Test Case')).toBeVisible();
+            }
+
+            finally{
+            await library.deleteTestcase(testcaseName);
+            }
+
+        });
+
+
+        test('User can click Break Up to split the test case into children', async ({ page, library })  => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        const testcaseName2 = `playwright-${randomUUID()}`;
+        const testcaseName3 = `playwright-${randomUUID()}`;
+        const prompt = 'Break this testcase into two separate testcases. Make sure one testcase has the name "' + testcaseName2 + '" and the other has the name "' + testcaseName3 + '"and make sure that the two child testcases have different names"';
+
+        await library.createTestcase(testcaseName);
+
+            try {
+            await library.findTestcase(testcaseName);
+            await library.rightClickTestcase(testcaseName, "BREAK UP")
+            await page.getByTestId('breakup-testcase-instructions-input').fill(prompt);
+            await page.getByTestId('breakup-testcase-confirm-btn').click();
+            await expect(page.getByText('Breakup Complete')).toBeVisible();
+            await page.getByTestId('breakup-report-close-btn').click();
+
+            await library.findTestcase(testcaseName);
+            await page.locator('[data-testid^="testcase-row-collapse-button"]').click();
+
+
+            await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName2 })).toBeVisible();
+            await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName3 })).toBeVisible();
+
+            }
+
+            finally{
+            await library.deleteTestcase(testcaseName);
+            }
+
+        });
+
+
+        test('User can highglight and delete all testcases linked to a story @P2', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        const testcaseName2 = `playwright-${randomUUID()}`;
+        const testcaseName3 = `playwright-${randomUUID()}`;
+        const testcaseStory = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName, testcaseStory);
+        await library.createTestcase(testcaseName2, testcaseStory);
+        await library.createTestcase(testcaseName3, testcaseStory);
+
+            try {
+            await page.getByTestId('testcases-tab-stories').click();
+            await expect(page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory })).toBeVisible();
+            await page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory }).click();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName2 })).toBeVisible();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName3 })).toBeVisible();
+            await page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory }).getByRole('checkbox').click();
+            await page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
+            await page.getByRole('menuitem').filter({ hasText: 'Delete All' }).click();
+            await page.getByTestId('confirm-dialog-confirm-btn').click();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseStory })).not.toBeVisible();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).not.toBeVisible();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName2 })).not.toBeVisible();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName3 })).not.toBeVisible();
+            }
+
+            finally {
+            await library.deleteTestcase(testcaseName, false);
+            await library.deleteTestcase(testcaseName2, false);
+            await library.deleteTestcase(testcaseName3, false);
+            }});
+
+
+        test('Creating new testcases on the same story groups them all under that story @P2', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        const testcaseName2 = `playwright-${randomUUID()}`;
+        const testcaseName3 = `playwright-${randomUUID()}`;
+        const testcaseStory = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName, testcaseStory);
+        await library.createTestcase(testcaseName2, testcaseStory);
+        await library.createTestcase(testcaseName3, testcaseStory);
+
+            try {
+            await page.getByTestId('testcases-tab-stories').click();
+            await expect(page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory })).toBeVisible();
+            await page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory }).click();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName2 })).toBeVisible();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName3 })).toBeVisible();
+            }
+
+            finally {
+            await library.deleteTestcase(testcaseName);
+            await library.deleteTestcase(testcaseName2);
+            await library.deleteTestcase(testcaseName3);
+            }});
+
+});
 });

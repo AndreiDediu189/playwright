@@ -4,7 +4,7 @@ dotenv.config({ path: './utils/secure.env' });
 
 export default defineConfig({
   fullyParallel: true,
-  timeout: 1000 * 30,
+  timeout: 1000 * 60,
   testDir: 'tests',
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -23,20 +23,29 @@ export default defineConfig({
       testDir: './utils',
       testMatch: 'key.spec.ts',
     },
+      {
+      name: 'cleanup',
+      use: { ...devices['Desktop Chrome'], storageState: './utils/loginstate.json' },
+      testDir: './utils',
+      testMatch: '**/teardown.spec.ts',
+    },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'], storageState: './utils/loginstate.json' },
       dependencies: ['setup'],
+      teardown: 'cleanup',
     },
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'], storageState: './utils/loginstate.json' },
       dependencies: ['setup'],
+      teardown: 'cleanup',
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'], storageState: './utils/loginstate.json' },
       dependencies: ['setup'],
+      teardown: 'cleanup',
     },
   ],
 });

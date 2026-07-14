@@ -46,6 +46,7 @@ await page.waitForLoadState('domcontentloaded');
             const code = message.html!.codes![0].value!;
             await page.keyboard.insertText(code!);
             await page.getByRole('button', { name: 'Verify' }).click();
+            await page.waitForResponse(response => response.url().includes('/verify-otp') && response.status() === 200);
             await expect(page.getByRole('heading', { name: 'TEST COMMANDER' })).toBeVisible();
         });
 
@@ -82,6 +83,7 @@ await page.waitForLoadState('domcontentloaded');
             await page.getByRole('textbox', { name: 'Email' }).fill(config.testEmailForResetPassword);
             const linkSentDate = new Date();
             await page.getByRole('button', { name: 'Send reset link' }).click();
+            await page.waitForResponse(response => response.url().includes('/reset-password-request') && response.status() === 200);
             await expect(page.getByText('Please check your email for the password reset link. It may take a few minutes to arrive.')).toBeVisible();
             const mailosaur = new MailosaurClient(config.mailosaurApiKey);
             const resetPasswordMessage = await mailosaur.messages.get(config.mailosaurServerId, { sentTo: config.testEmailForResetPassword }, { receivedAfter: linkSentDate });
