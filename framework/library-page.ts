@@ -11,78 +11,6 @@ constructor(private page: Page) {}
 
 
 
-async deleteTestcase(testcaseName: string, assertion = true) {
-
-        try {
-        await this.page.goto('/testcases');
-        await this.page.locator('[data-testid="testcases-search-input"]').fill(testcaseName);
-        await this.page.waitForTimeout(5000);
-
-        if (await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).isVisible()) {
-        await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
-        await this.page.getByRole('menuitem', { name: 'Delete' }).click();
-        await this.page.getByRole('button', { name: 'Delete' }).click();
-        await expect(this.page.getByRole('dialog', { name: 'Delete Test Case' })).not.toBeVisible(); 
-        }
-
-        else {
-        await this.page.getByTestId('toggle-archived-btn').click();
-        await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
-        await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
-        await this.page.getByRole('menuitem', { name: 'Delete' }).click();
-        await this.page.getByRole('button', { name: 'Delete' }).click();
-        await expect(this.page.getByRole('dialog', { name: 'Delete Test Case' })).not.toBeVisible();
-        }
-
-
-}
-
-        catch (e) {
-        if (assertion) throw e;
-        }
-};
-
-
-
-async cleanup(testcaseName: string = 'playwright-', assertion = true) {
-        try {
-        await this.page.goto('/testcases');
-        await this.page.locator('[data-testid="testcases-search-input"]').fill(testcaseName);
-        await this.page.waitForTimeout(5000);
-        while (await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).count() > 0) {
-        await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).first().click({ button: 'right' });
-        await this.page.waitForTimeout(1000);
-        await this.page.getByRole('menuitem', { name: 'Delete' }).click();
-        await this.page.waitForTimeout(1000);
-        await this.page.getByRole('button', { name: 'Delete' }).click();
-        await this.page.waitForTimeout(1000);
-        await this.page.waitForSelector('[role="dialog"]', { state: 'hidden' });
-        }
-
-        }
-
-        catch (e) {
-        if (assertion) throw e;
-        }
-};
-
-
-
-async setAPIKey(apiKey = config.openAiKey, assertion = true){
-
-
-        try {
-        await this.page.locator('[data-testid="sidebar-ai-key-btn"]').click();
-        await this.page.locator('[data-testid="ai-modal-key-input"]').fill(apiKey);
-        await this.page.locator('[data-testid="ai-modal-save-btn"]').click();
-        }
-
-        catch (e) {
-        if (assertion) throw e;
-        }
-};
-
-
 
 async createTestcase(testcaseName: string = 'Default string - Manual testcase for testing. Make sure to delete.', testcaseStory: string = 'PROJ-123', assertion = true) {
 
@@ -118,15 +46,31 @@ async createTestcase(testcaseName: string = 'Default string - Manual testcase fo
 
 
 
-async findOpenTestcase(testcaseName: string, assertion = true) {
-
+async deleteTestcase(testcaseName: string, assertion = true) {
 
         try {
         await this.page.goto('/testcases');
-        await this.page.getByTestId('testcases-search-input').fill(testcaseName);
-        await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
-        await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click();
+        await this.page.locator('[data-testid="testcases-search-input"]').fill(testcaseName);
+        await this.page.waitForTimeout(5000);
+
+        if (await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).isVisible()) {
+        await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
+        await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+        await this.page.getByRole('button', { name: 'Delete' }).click();
+        await expect(this.page.getByRole('dialog', { name: 'Delete Test Case' })).not.toBeVisible(); 
         }
+
+        else {
+        await this.page.getByTestId('toggle-archived-btn').click();
+        await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
+        await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
+        await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+        await this.page.getByRole('button', { name: 'Delete' }).click();
+        await expect(this.page.getByRole('dialog', { name: 'Delete Test Case' })).not.toBeVisible();
+        }
+
+
+}
 
         catch (e) {
         if (assertion) throw e;
@@ -135,13 +79,24 @@ async findOpenTestcase(testcaseName: string, assertion = true) {
 
 
 
-async findTestcase(testcaseName: string, assertion = true): Promise<Locator | null> {
+async findTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
 
         try {
+
+        if(locator == "TITLE") {
         await this.page.goto('/testcases');
         await this.page.getByTestId('testcases-search-input').fill(testcaseName);
         await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
         return this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName });
+        }
+
+        if(locator == "ROW") {
+        await this.page.goto('/testcases');
+        await this.page.getByTestId('testcases-search-input').fill(testcaseName);
+        await expect(this.page.locator('[data-rfd-draggable-context-id]').filter({ hasText: testcaseName })).toBeVisible();
+        return this.page.locator('[data-rfd-draggable-context-id]').filter({ hasText: testcaseName });
+        }
+        else return null;
         }
 
         catch (e) {
@@ -163,11 +118,31 @@ async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAK UP' | 
         if (action == 'BREAK UP') {
                 await this.page.getByRole('menuitem', { name: 'Break Up' }).click();
                 await this.page.getByTestId('breakup-testcase-instructions-input').fill(breakUpPrompt);
+                await this.page.getByTestId('breakup-testcase-confirm-btn').click();
+                await expect(this.page.getByText('Breakup Complete')).toBeVisible();
+                await this.page.getByTestId('breakup-report-close-btn').click();
         };
         if (action == 'CSV') await this.page.getByRole('menuitem', { name: 'Export to CSV' }).click();
         if (action == 'TESTRAIL') await this.page.getByRole('menuitem', { name: 'Export to TestRail' }).click();
         if (action == 'ARCHIVE') await this.page.getByRole('menuitem', { name: 'Archive' }).click();
         if (action == 'DELETE') await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+        }
+
+        catch (e) {
+        if (assertion) throw e;
+        }
+};
+
+
+
+async findOpenTestcase(testcaseName: string, assertion = true) {
+
+
+        try {
+        await this.page.goto('/testcases');
+        await this.page.getByTestId('testcases-search-input').fill(testcaseName);
+        await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
+        await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click();
         }
 
         catch (e) {
@@ -208,6 +183,79 @@ async searchTestcase(testcaseName: string, assertion = true) {
         if (assertion) throw e;
         }
 };
+
+
+
+async setAPIKey(apiKey = config.openAiKey, assertion = true){
+
+
+        try {
+        await this.page.locator('[data-testid="sidebar-ai-key-btn"]').click();
+        await this.page.locator('[data-testid="ai-modal-key-input"]').fill(apiKey);
+        await this.page.locator('[data-testid="ai-modal-save-btn"]').click();
+        }
+
+        catch (e) {
+        if (assertion) throw e;
+        }
+};
+
+
+
+async cleanup(testcaseName: string = 'playwright-', assertion = true) {
+        try {
+        await this.page.goto('/testcases');
+        await this.page.locator('[data-testid="testcases-search-input"]').fill(testcaseName);
+        await this.page.waitForTimeout(5000);
+        while (await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).count() > 0) {
+        await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).first().click({ button: 'right' });
+        await this.page.waitForTimeout(1000);
+        await this.page.getByRole('menuitem', { name: 'Delete' }).click();
+        await this.page.waitForTimeout(1000);
+        await this.page.getByRole('button', { name: 'Delete' }).click();
+        await this.page.waitForTimeout(1000);
+        await this.page.waitForSelector('[role="dialog"]', { state: 'hidden' });
+        }
+
+        }
+
+        catch (e) {
+        if (assertion) throw e;
+        }
+};
+
+
+
+async getMiddleOfElement(testcaseName: Locator, assertion = true): Promise<{ x: number; y: number }> {
+
+        try {
+        const box1 = (await testcaseName.boundingBox())!;
+        return { x:box1.x + box1.width / 2, y:box1.y + box1.height / 2 };
+        }
+
+        catch (e) {
+        if (assertion) throw e;
+        return { x: NaN, y: NaN };
+        }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

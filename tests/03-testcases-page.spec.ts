@@ -7,8 +7,8 @@ import { randomUUID } from 'crypto';
 
 test.describe('Testcases page', () => { 
 test.beforeEach(async ({ page }) => {
-await page.goto('/testcases');
-await page.waitForLoadState('domcontentloaded');
+    await page.goto('/testcases');
+    await page.waitForLoadState('domcontentloaded');
 });
 
 
@@ -63,33 +63,28 @@ test.describe.serial('Non-parallel @manual', () => {
             await library.deleteTestcase(testcaseName);
             }});
 
-        test('User can see the reordered list persisted after drag and drop @P2', async ({ page }) => {
-
-        
+        test('User can see the reordered list persisted after drag and drop @P2', async ({ page, library }) => {
         const testcaseRow = await page.locator('[data-testid^="testcase-row-title-"]').first().textContent();
         const testcaseRow2 = await page.locator('[data-testid^="testcase-row-title-"]').nth(1).textContent();
-        const testcaseHandle = await page.locator('[data-rfd-drag-handle-draggable-id]').first();
-        const testcaseHandle2 = await page.locator('[data-rfd-drag-handle-draggable-id]').nth(1);
+        const testcaseHandleCoords = await library.getMiddleOfElement(await page.locator('[data-rfd-drag-handle-draggable-id]').first());
+        const testcaseHandle2Coords = await library.getMiddleOfElement(await page.locator('[data-rfd-drag-handle-draggable-id]').nth(1));        
+        
 
-
-        const box1 = (await testcaseHandle.boundingBox())!;
-        const box2 = (await testcaseHandle2.boundingBox())!;
-        await page.mouse.move(box1.x + box1.width / 2, box1.y + box1.height / 2);
-        await page.mouse.down();
-        await page.waitForTimeout(500);
-        await page.mouse.move(box2.x + box2.width / 2, box2.y + box2.height / 2, { steps: 10 });
-        await page.waitForTimeout(1000);
-        await page.mouse.up();
-
-        await page.waitForTimeout(5000); // Wait for the reordering to be processed
+            await page.mouse.move(testcaseHandleCoords.x, testcaseHandleCoords.y);
+            await page.mouse.down();
+            await page.waitForTimeout(1000);
+            await page.mouse.move(testcaseHandle2Coords.x, testcaseHandle2Coords.y, { steps: 10 });
+            await page.waitForTimeout(1000);
+            await page.mouse.up();
+            await page.waitForTimeout(5000); // Wait for the reordering to be processed
 
         const testcaseRowAfterUpdate = await page.locator('[data-testid^="testcase-row-title-"]').first().textContent();
         const testcaseRowAfterUpdate2 = await page.locator('[data-testid^="testcase-row-title-"]').nth(1).textContent();
-        
-        await expect(testcaseRow2).toBe(testcaseRowAfterUpdate);
-        await expect(testcaseRow).toBe(testcaseRowAfterUpdate2);
-   
-            });
+            
+
+            await expect(testcaseRow2).toBe(testcaseRowAfterUpdate);
+            await expect(testcaseRow).toBe(testcaseRowAfterUpdate2);
+        });
 
 });
 
@@ -506,12 +501,7 @@ test.describe('Parallel', () => {
 
             try {
             await library.findTestcase(testcaseName);
-            await library.rightClickTestcase(testcaseName, "BREAK UP")
-            await page.getByTestId('breakup-testcase-instructions-input').fill(prompt);
-            await page.getByTestId('breakup-testcase-confirm-btn').click();
-            await expect(page.getByText('Breakup Complete')).toBeVisible();
-            await page.getByTestId('breakup-report-close-btn').click();
-
+            await library.rightClickTestcase(testcaseName, "BREAK UP", true, prompt)
             await library.findTestcase(testcaseName);
             await page.locator('[data-testid^="testcase-row-collapse-button"]').click();
 
@@ -585,5 +575,28 @@ test.describe('Parallel', () => {
             await library.deleteTestcase(testcaseName3);
             }});
 
+
+        test('User can enter custom breakup instructions in the break up modal', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        const testcaseName2 = `playwright-${randomUUID()}`;
+        const testcaseName3 = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName);
+
+            try {
+            await library.findTestcase(testcaseName);
+            await library.rightClickTestcase(testcaseName, "BREAK UP", true, "Make sure to break this testcase into two separate testcases. Make sure one testcase has the name" + testcaseName2 + " and the other has the name" + testcaseName3 + "and make sure that the two child testcases have different names");
+            const brokenUpTestcase = await library.findTestcase(testcaseName);
+            await brokenUpTestcase!.locator('[data-testid^="testcase-row-collapse-button"]').click();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName2 })).toBeVisible();
+            await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName3 })).toBeVisible();
+            }
+
+            finally {
+            await library.deleteTestcase(testcaseName);
+            }
+            });
+
+
+            
 });
 });
