@@ -19,11 +19,12 @@ test.beforeEach(async ({ page }) => {
             const testcaseName = await page.getByTestId('editable-testcase-title-input').inputValue();
             await expect(testcaseName).toBeTruthy();
             await expect(page.getByRole('button', { name: 'Save Test Case' })).toBeVisible();
+
+
+            try {
             await page.getByRole('button', { name: 'Save Test Case' }).click();
             await expect(page.getByText('Test Case Saved')).toBeVisible();
             await page.getByTestId('alert-dialog-ok-btn').click();
-
-            try {
             await library.findOpenTestcase(testcaseName);
             await expect(page.getByTestId('editable-testcase-title-input')).toHaveValue(testcaseName);
             }
@@ -32,6 +33,7 @@ test.beforeEach(async ({ page }) => {
             await library.deleteTestcase(testcaseName);
             }
 
+            
         });
 
         

@@ -2,6 +2,7 @@ import { test, expect } from '../framework/fixtures';
 import fs from 'fs';
 import { csvFile } from '../utils/files';
 import { randomUUID } from 'crypto';
+import { IMGStory } from '../utils/files';
 
 
 
@@ -451,7 +452,7 @@ test.describe('Parallel', () => {
             await library.deleteTestcase(testcaseName1, false);
             }
 
-        });
+            });
 
 
         test('User can see the test case removed from the list after deletion', async ({ page, library })  => {
@@ -471,7 +472,7 @@ test.describe('Parallel', () => {
             await library.deleteTestcase(testcaseName, false);
             }
 
-        });
+            });
 
 
         test('User can click a test case row to open the edit modal', async ({ page, library })  => {
@@ -488,7 +489,7 @@ test.describe('Parallel', () => {
             await library.deleteTestcase(testcaseName);
             }
 
-        });
+            });
 
 
         test('User can click Break Up to split the test case into children', async ({ page, library })  => {
@@ -515,7 +516,7 @@ test.describe('Parallel', () => {
             await library.deleteTestcase(testcaseName);
             }
 
-        });
+            });
 
 
         test('User can highglight and delete all testcases linked to a story @P2', async ({ page, library }) => {
@@ -576,7 +577,7 @@ test.describe('Parallel', () => {
             }});
 
 
-        test('User can enter custom breakup instructions in the break up modal', async ({ page, library }) => {
+        test('User can break up a testcase with custom breakup instructions in the break up modal', async ({ page, library }) => {
         const testcaseName = `playwright-${randomUUID()}`;
         const testcaseName2 = `playwright-${randomUUID()}`;
         const testcaseName3 = `playwright-${randomUUID()}`;
@@ -596,6 +597,121 @@ test.describe('Parallel', () => {
             }
             });
 
+
+        test('User can attach image files in the create modal @P3', async ({ page })  => {
+            await page.getByTestId('testcases-create-btn').click();
+            await page.getByTestId('create-testcase-file-input').setInputFiles(IMGStory);
+            await expect(page.getByText('ImgStory.png')).toBeVisible();
+            });
+
+        test('User can generate testcase using image @Smoke', async ({ page, library })  => {
+        const prompt = 'generate a testcase based on the attached story image';
+
+        await page.getByTestId('testcases-create-btn').click();
+        await page.getByTestId('create-testcase-file-input').setInputFiles(IMGStory);
+        await expect(page.getByText('ImgStory.png')).toBeVisible();
+        await page.getByTestId('create-testcase-prompt-input').fill(prompt);
+        await page.getByTestId('create-testcase-generate-btn').click();
+        await expect(page.getByText('GENERATED')).toBeVisible({timeout: 60000});
+        await expect(page.getByText('Test case created successfully')).toBeVisible();
+        await expect(page.getByTestId('editable-testcase-jira-key-input')).toHaveValue('KAN-2');
+        await expect(page.getByTestId('editable-testcase-title-input')).toHaveValue(/SSO/);
+        const testcaseName = await page.getByTestId('editable-testcase-title-input').inputValue();        
+        try {
+        await page.getByTestId('create-testcase-save-btn').click();
+        }
+        finally {
+        await library.deleteTestcase(testcaseName);
+        }
+    
+            });
+   
+        
+        test('Validate character limit for custom breakup instructions (max 500 characters) @P2', async ({ page, library })  => {            
+        const testcaseName = `playwright-${randomUUID()}`;        
+        const prompt = randomUUID();
+        await library.createTestcase(testcaseName);
+
+        try {
+        await library.findOpenTestcase(testcaseName);
+        await page.getByTestId('edit-testcase-break-up-btn').click();
+        while (!(await page.getByTestId('breakup-testcase-modal').getByText('500 / 500').isVisible())) {
+        await page.getByTestId('breakup-testcase-instructions-input').pressSequentially(prompt);
+        }
+        await expect(page.getByTestId('breakup-testcase-modal').getByText('500 / 500')).toBeVisible();
+        await page.getByTestId('breakup-testcase-instructions-input').pressSequentially(prompt);
+        const characterCount = await page.getByTestId('breakup-testcase-instructions-input').inputValue();
+        expect(characterCount.length).toBeLessThanOrEqual(500);
+        }
+
+        finally {
+        await library.deleteTestcase(testcaseName);
+        }
+
+            });
+
+
+        test('User will get a quality score when analyzing a testcase @P2', async ({ page, library })  => {            
+        const testcaseName = `playwright-${randomUUID()}`;        
+        await library.createTestcase(testcaseName);
+
+        try {
+        await library.rightClickTestcase(testcaseName, "ANALYZE");
+        await expect(page.getByText('Quality Score')).toBeVisible({ timeout: 60000 });
+        const qscore = await page.getByTestId('analysis-modal').locator('.text-3xl').textContent();
+        expect(Number(qscore)).toBeTruthy();
+        expect(Number(qscore)).not.toBeNaN();
+        expect(Number(qscore)).toBeLessThanOrEqual(10);
+        expect(Number(qscore)).toBeGreaterThanOrEqual(0.1);
+        }
+
+        finally {
+        await library.deleteTestcase(testcaseName);
+        }
+
+            });
+
+
+        test('User will get a "can reach" assessment when analyzing a testcase @P2', async ({ page, library })  => {            
+        const testcaseName = `playwright-${randomUUID()}`;        
+        await library.createTestcase(testcaseName);
+
+        try {
+        await library.rightClickTestcase(testcaseName, "ANALYZE");
+        await expect(page.getByText(/Can reach/)).toBeVisible({ timeout: 60000 });
+        const canReachScore = await page.getByText(/Can reach/).textContent();
+        await expect(canReachScore).toMatch(/\d/);
+        const score = parseFloat(canReachScore!.replace(/[^0-9.]/g, ''));   /// also "^" is "not" in regex. make into a number by deleting everything that is not 0 through 9 and dot, /g so globally across the whole string
+        expect(score).toBeTruthy();
+        expect(score).not.toBeNaN();
+        expect(score).toBeLessThanOrEqual(10);
+        expect(score).toBeGreaterThanOrEqual(0.1);
+    }
+
+        finally {
+        await library.deleteTestcase(testcaseName);
+        }
+
+            });
+
+
+        test('User can delete testcase steps from the edit testcase modal @P2', async ({ page, library })  => {            
+        const testcaseName = `playwright-${randomUUID()}`;        
+        await library.createTestcase(testcaseName);
+
+        try {
+        await library.findOpenTestcase(testcaseName);
+        const numberOfSteps = await page.locator('[data-testid^=editable-testcase-step-action-input]').count();
+        await page.getByTestId('editable-testcase-step-remove-btn-1').click();
+        const numberOfStepsAfter = await page.locator('[data-testid^=editable-testcase-step-action-input]').count();
+        expect(numberOfStepsAfter).toBe(numberOfSteps - 1);
+        }
+
+        finally {
+        await library.deleteTestcase(testcaseName);
+        }
+
+            });
 
             
 });

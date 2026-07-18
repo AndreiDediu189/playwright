@@ -7,8 +7,8 @@ const emailAddress = `test-${Date.now()}@${config.mailosaurServerId}.mailosaur.n
 
 test.describe('Login page', () => {
 test.beforeEach(async ({ page }) => {
-await page.goto('/login');
-await page.waitForLoadState('domcontentloaded');
+    await page.goto('/login');
+    await page.waitForLoadState('domcontentloaded');
 });
 
 

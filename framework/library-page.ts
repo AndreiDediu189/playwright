@@ -170,21 +170,6 @@ async changeTestcaseStatus(testcaseName: string, status: 'DRAFT' | 'READY' | 'IN
 
 
 
-async searchTestcase(testcaseName: string, assertion = true) {
-
-
-        try {
-        await this.page.goto('/testcases');
-        await this.page.getByTestId('testcases-search-input').fill(testcaseName);
-        await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
-        }
-
-        catch (e) {
-        if (assertion) throw e;
-        }
-};
-
-
 
 async setAPIKey(apiKey = config.openAiKey, assertion = true){
 
