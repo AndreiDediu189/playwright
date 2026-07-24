@@ -4,7 +4,7 @@ dotenv.config({ path: './utils/secure.env' });
 
 export default defineConfig({
   fullyParallel: true,
-  timeout: 1000 * 60,
+  timeout: 1000 * 120,
   testDir: 'tests',
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

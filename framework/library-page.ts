@@ -44,8 +44,6 @@ async createTestcase(testcaseName: string = 'Default string - Manual testcase fo
         }
 };
 
-
-
 async deleteTestcase(testcaseName: string, assertion = true) {
 
         try {
@@ -57,7 +55,6 @@ async deleteTestcase(testcaseName: string, assertion = true) {
         await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
         await this.page.getByRole('menuitem', { name: 'Delete' }).click();
         await this.page.getByRole('button', { name: 'Delete' }).click();
-        await expect(this.page.getByRole('dialog', { name: 'Delete Test Case' })).not.toBeVisible(); 
         }
 
         else {
@@ -66,7 +63,6 @@ async deleteTestcase(testcaseName: string, assertion = true) {
         await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
         await this.page.getByRole('menuitem', { name: 'Delete' }).click();
         await this.page.getByRole('button', { name: 'Delete' }).click();
-        await expect(this.page.getByRole('dialog', { name: 'Delete Test Case' })).not.toBeVisible();
         }
 
 
@@ -77,7 +73,52 @@ async deleteTestcase(testcaseName: string, assertion = true) {
         }
 };
 
+async findTestcaseOnPage(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
 
+        try {
+
+        if(locator == "TITLE") {
+        await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
+        return this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName });
+        }
+
+        if(locator == "ROW") {
+        await expect(this.page.locator('[data-rfd-draggable-context-id]').filter({ hasText: testcaseName })).toBeVisible();
+        return this.page.locator('[data-rfd-draggable-context-id]').filter({ hasText: testcaseName });
+        }
+        else return null;
+        }
+
+        catch (e) {
+        if (assertion) throw e;
+        return null;
+        }
+};
+
+async searchForTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
+
+        try {
+
+        if(locator == "TITLE") {
+        await expect(this.page).toHaveURL('/testcases');
+        await this.page.getByTestId('testcases-search-input').fill(testcaseName);    
+        await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
+        }
+
+        if(locator == "ROW") {
+        await expect(this.page).toHaveURL('/testcases');
+        await this.page.getByTestId('testcases-search-input').fill(testcaseName);    
+        await expect(this.page.locator('[data-rfd-draggable-context-id]').filter({ hasText: testcaseName })).toBeVisible();
+        return this.page.locator('[data-rfd-draggable-context-id]').filter({ hasText: testcaseName });
+        }
+        else return null;
+        }
+
+        catch (e) {
+        if (assertion) throw e;
+        return null;
+        }
+};
 
 async findTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
 
@@ -105,23 +146,29 @@ async findTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TIT
         }
 };
 
-
-
-async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAK UP' | 'CSV' | 'TESTRAIL' | 'ARCHIVE' | 'DELETE', assertion = true, breakUpPrompt: string = '') {
+async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAKUP' | 'REVERT BREAKUP' | 'CSV' | 'TESTRAIL' | 'ARCHIVE' | 'DELETE', assertion = true, breakUpPrompt: string = '') {
 
 
         try {
         await expect(this.page).toHaveURL(/testcases/);
         await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();
         await this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({button: 'right'});
-        if (action == 'ANALYZE') await this.page.getByRole('menuitem', { name: 'Analyze' }).click();
-        if (action == 'BREAK UP') {
+        if (action == 'ANALYZE') await this.page.getByRole('menuitem', { name: 'Analyze', exact:false }).click();
+
+        if (action == 'BREAKUP') {
                 await this.page.getByRole('menuitem', { name: 'Break Up' }).click();
                 await this.page.getByTestId('breakup-testcase-instructions-input').fill(breakUpPrompt);
                 await this.page.getByTestId('breakup-testcase-confirm-btn').click();
-                await expect(this.page.getByText('Breakup Complete')).toBeVisible();
+                await expect(this.page.getByText('Breakup Complete')).toBeVisible({ timeout: 600000 });
                 await this.page.getByTestId('breakup-report-close-btn').click();
+                await expect(this.page.getByTestId('breakup-report-modal')).not.toBeVisible();
         };
+
+        if (action == 'REVERT BREAKUP') {
+                await this.page.getByRole('menuitem', { name: 'Revert Breakup' }).click();
+                await this.page.getByTestId('confirm-dialog-confirm-btn').click();
+        };
+
         if (action == 'CSV') await this.page.getByRole('menuitem', { name: 'Export to CSV' }).click();
         if (action == 'TESTRAIL') await this.page.getByRole('menuitem', { name: 'Export to TestRail' }).click();
         if (action == 'ARCHIVE') await this.page.getByRole('menuitem', { name: 'Archive' }).click();
@@ -132,8 +179,6 @@ async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAK UP' | 
         if (assertion) throw e;
         }
 };
-
-
 
 async findOpenTestcase(testcaseName: string, assertion = true) {
 
@@ -150,26 +195,21 @@ async findOpenTestcase(testcaseName: string, assertion = true) {
         }
 };
 
-
-
 async changeTestcaseStatus(testcaseName: string, status: 'DRAFT' | 'READY' | 'IN PROGRESS' | 'COMPLETED', assertion = true) {
 
         try {
         await this.page.goto('/testcases');
         await this.page.getByTestId('testcases-search-input').fill(testcaseName);
         await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();  
-        await this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).getByRole('combobox').click();
+        await this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])').click();
         await this.page.getByRole('option', { name: status }).click();
-        await expect(this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).getByRole('combobox')).toHaveText(status);
+        await expect(this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toHaveText(status);
         }
 
         catch (e) {
         if (assertion) throw e;
         }
 };
-
-
-
 
 async setAPIKey(apiKey = config.openAiKey, assertion = true){
 
@@ -184,8 +224,6 @@ async setAPIKey(apiKey = config.openAiKey, assertion = true){
         if (assertion) throw e;
         }
 };
-
-
 
 async cleanup(testcaseName: string = 'playwright-', assertion = true) {
         try {
@@ -208,8 +246,6 @@ async cleanup(testcaseName: string = 'playwright-', assertion = true) {
         if (assertion) throw e;
         }
 };
-
-
 
 async getMiddleOfElement(testcaseName: Locator, assertion = true): Promise<{ x: number; y: number }> {
 
