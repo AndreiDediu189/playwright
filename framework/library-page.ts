@@ -204,6 +204,7 @@ async changeTestcaseStatus(testcaseName: string, status: 'DRAFT' | 'READY' | 'IN
         await this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])').click();
         await this.page.getByRole('option', { name: status }).click();
         await expect(this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toHaveText(status);
+        await this.page.getByTestId('testcases-search-input').fill('');
         }
 
         catch (e) {

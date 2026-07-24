@@ -1,4 +1,4 @@
-import { test, expect, config } from '../framework/fixtures';
+import { test, expect, config } from '../../framework/fixtures';
 import MailosaurClient from 'mailosaur';
 const emailAddress = `test-${Date.now()}@${config.mailosaurServerId}.mailosaur.net`;
 

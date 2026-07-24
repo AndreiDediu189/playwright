@@ -1,7 +1,7 @@
-import { test, expect } from '../framework/fixtures';
-import { IMGUI } from '../utils/files';
-import { IMGStory } from '../utils/files';
-import { PDFStory } from '../utils/files';
+import { test, expect } from '../../framework/fixtures';
+import { IMGUI } from '../../utils/files';
+import { IMGStory } from '../../utils/files';
+import { PDFStory } from '../../utils/files';
 
 test.describe('Analyze page', () => {
 test.beforeEach(async ({ page }) => {       
