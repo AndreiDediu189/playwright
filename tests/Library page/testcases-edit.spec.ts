@@ -180,4 +180,31 @@ test.beforeEach(async ({ page }) => {
             }
             });
 
+
+        test('User can select multiple test cases and bulk change status', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        const testcaseName2 = `playwright-${randomUUID()}`;
+        const testcaseName3 = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName);
+        await library.createTestcase(testcaseName2);
+        await library.createTestcase(testcaseName3);
+
+            try {
+            await (await library.findTestcaseOnPage(testcaseName))!.locator('[data-testid^=testcase-row-checkbox][type=button]').click();
+            await (await library.findTestcaseOnPage(testcaseName2))!.locator('[data-testid^=testcase-row-checkbox][type=button]').click();
+            await (await library.findTestcaseOnPage(testcaseName3))!.locator('[data-testid^=testcase-row-checkbox][type=button]').click();
+            await library.rightClickTestcase(testcaseName, "BULK CHANGE STATUS", {status:'READY'} );
+            await library.findTestcase(testcaseName);
+            await expect(page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toContainText('READY');
+            await library.findTestcase(testcaseName2);
+            await expect(page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName2 }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toContainText('READY');
+            await library.findTestcase(testcaseName3);
+            await expect(page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName3 }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toContainText('READY');
+            }
+
+            finally {
+            await library.deleteTestcase(testcaseName);
+            await library.deleteTestcase(testcaseName2);
+            await library.deleteTestcase(testcaseName3);
+            }});
 });

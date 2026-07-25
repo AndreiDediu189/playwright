@@ -146,7 +146,7 @@ async findTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TIT
         }
 };
 
-async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAKUP' | 'REVERT BREAKUP' | 'CSV' | 'TESTRAIL' | 'ARCHIVE' | 'DELETE', assertion = true, breakUpPrompt: string = '') {
+async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAKUP' | 'REVERT BREAKUP' | 'CSV' | 'TESTRAIL' | 'ARCHIVE' | 'DELETE' | 'COMBINE' | 'BULK CHANGE STATUS', { assertion = true, breakUpPrompt = '', status = 'DRAFT' }: { assertion?: boolean, breakUpPrompt?: string, status?: 'DRAFT' | 'READY' | 'IN PROGRESS' | 'COMPLETED' } = {}) {
 
 
         try {
@@ -162,6 +162,17 @@ async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAKUP' | '
                 await expect(this.page.getByText('Breakup Complete')).toBeVisible({ timeout: 600000 });
                 await this.page.getByTestId('breakup-report-close-btn').click();
                 await expect(this.page.getByTestId('breakup-report-modal')).not.toBeVisible();
+        };
+
+        if (action == 'COMBINE') {
+                await this.page.getByRole('menuitem', { name: 'Combine Test Cases' }).click();
+                await this.page.getByTestId('confirm-dialog-confirm-btn').click();
+                await expect(this.page.locator('.pointer-events-auto').filter({hasText:"SUCCESS"})).toBeVisible({ timeout: 600000 });
+        };
+
+        if (action == 'BULK CHANGE STATUS') {
+                await this.page.getByRole('menuitem', { name: 'Change Status' }).click();
+                await this.page.getByRole('menuitem', { name: status }).click();
         };
 
         if (action == 'REVERT BREAKUP') {

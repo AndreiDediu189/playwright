@@ -27,7 +27,7 @@ export default defineConfig({
       name: 'cleanup',
       use: { ...devices['Desktop Chrome'], storageState: './utils/loginstate.json' },
       testDir: './utils',
-      testMatch: '**/teardown.spec.ts',
+      testMatch: '**/cleanup.spec.ts',
     },
     {
       name: 'chromium',
