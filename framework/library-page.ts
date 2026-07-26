@@ -42,7 +42,7 @@ async createTestcase(testcaseName: string = 'Default string - Manual testcase fo
         catch (e) {
         if (assertion) throw e;
         }
-};
+}
 
 async deleteTestcase(testcaseName: string, assertion = true) {
 
@@ -71,7 +71,7 @@ async deleteTestcase(testcaseName: string, assertion = true) {
         catch (e) {
         if (assertion) throw e;
         }
-};
+}
 
 async findTestcaseOnPage(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
 
@@ -93,7 +93,7 @@ async findTestcaseOnPage(testcaseName: string, assertion = true, locator: "ROW" 
         if (assertion) throw e;
         return null;
         }
-};
+}
 
 async searchForTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
 
@@ -118,7 +118,7 @@ async searchForTestcase(testcaseName: string, assertion = true, locator: "ROW" |
         if (assertion) throw e;
         return null;
         }
-};
+}
 
 async findTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
 
@@ -144,9 +144,28 @@ async findTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TIT
         if (assertion) throw e;
         return null;
         }
-};
+}
 
-async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAKUP' | 'REVERT BREAKUP' | 'CSV' | 'TESTRAIL' | 'ARCHIVE' | 'DELETE' | 'COMBINE' | 'BULK CHANGE STATUS', { assertion = true, breakUpPrompt = '', status = 'DRAFT' }: { assertion?: boolean, breakUpPrompt?: string, status?: 'DRAFT' | 'READY' | 'IN PROGRESS' | 'COMPLETED' } = {}) {
+async selectTestcases({ testcaseName, assertion = true }: { testcaseName?: Array<String>, assertion?: boolean, breakUpPrompt?: string, status?: 'DRAFT' | 'READY' | 'IN PROGRESS' | 'COMPLETED' } = {}) {
+
+
+        try {
+        await expect(this.page).toHaveURL(/testcases/);
+
+        if (testcaseName!.length > 0) {
+
+            for(let i = 0; i < testcaseName!.length; i++) {
+                await this.page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName!.at(i)?.toString() }).getByRole('checkbox').click();
+                }
+        }
+        }
+        catch (e) {
+        if (assertion) throw e;
+        }
+
+}
+
+async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAKUP' | 'REVERT BREAKUP' | 'CSV' | 'TESTRAIL' | 'ARCHIVE' | 'DELETE' | 'COMBINE' | 'BULK CHANGE STATUS', assertion = true, { breakUpPrompt = '', status = 'DRAFT' }: { assertion?: boolean, breakUpPrompt?: string, status?: 'DRAFT' | 'READY' | 'IN PROGRESS' | 'COMPLETED' } = {}) {
 
 
         try {
@@ -189,7 +208,7 @@ async rightClickTestcase(testcaseName: string, action: 'ANALYZE' | 'BREAKUP' | '
         catch (e) {
         if (assertion) throw e;
         }
-};
+}
 
 async findOpenTestcase(testcaseName: string, assertion = true) {
 
@@ -204,7 +223,7 @@ async findOpenTestcase(testcaseName: string, assertion = true) {
         catch (e) {
         if (assertion) throw e;
         }
-};
+}
 
 async changeTestcaseStatus(testcaseName: string, status: 'DRAFT' | 'READY' | 'IN PROGRESS' | 'COMPLETED', assertion = true) {
 
@@ -221,7 +240,7 @@ async changeTestcaseStatus(testcaseName: string, status: 'DRAFT' | 'READY' | 'IN
         catch (e) {
         if (assertion) throw e;
         }
-};
+}
 
 async setAPIKey(apiKey = config.openAiKey, assertion = true){
 
@@ -235,7 +254,7 @@ async setAPIKey(apiKey = config.openAiKey, assertion = true){
         catch (e) {
         if (assertion) throw e;
         }
-};
+}
 
 async cleanup(testcaseName: string = 'playwright-', assertion = true) {
         try {
@@ -257,7 +276,7 @@ async cleanup(testcaseName: string = 'playwright-', assertion = true) {
         catch (e) {
         if (assertion) throw e;
         }
-};
+}
 
 async getMiddleOfElement(testcaseName: Locator, assertion = true): Promise<{ x: number; y: number }> {
 
@@ -270,7 +289,7 @@ async getMiddleOfElement(testcaseName: Locator, assertion = true): Promise<{ x: 
         if (assertion) throw e;
         return { x: NaN, y: NaN };
         }
-};
+}
 
 
 

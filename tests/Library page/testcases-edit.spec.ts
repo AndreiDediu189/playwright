@@ -193,7 +193,7 @@ test.beforeEach(async ({ page }) => {
             await (await library.findTestcaseOnPage(testcaseName))!.locator('[data-testid^=testcase-row-checkbox][type=button]').click();
             await (await library.findTestcaseOnPage(testcaseName2))!.locator('[data-testid^=testcase-row-checkbox][type=button]').click();
             await (await library.findTestcaseOnPage(testcaseName3))!.locator('[data-testid^=testcase-row-checkbox][type=button]').click();
-            await library.rightClickTestcase(testcaseName, "BULK CHANGE STATUS", {status:'READY'} );
+            await library.rightClickTestcase(testcaseName, "BULK CHANGE STATUS", true, {status:'READY'} );
             await library.findTestcase(testcaseName);
             await expect(page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toContainText('READY');
             await library.findTestcase(testcaseName2);

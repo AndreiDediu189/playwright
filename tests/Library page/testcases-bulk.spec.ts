@@ -17,9 +17,7 @@ test.beforeEach(async ({ page }) => {
             await library.createTestcase(testcaseName3);
 
             try {
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName1 }).getByRole('checkbox').click();
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName2 }).getByRole('checkbox').click();
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName3 }).getByRole('checkbox').click();
+            await library.selectTestcases({ testcaseName: [testcaseName1, testcaseName2, testcaseName3] });
             await page.getByTestId('bulk-delete-btn').click();
             await page.getByTestId('confirm-dialog-confirm-btn').click();
             await expect(page.getByTestId('confirm-dialog-confirm-btn')).not.toBeVisible();
@@ -46,9 +44,7 @@ test.beforeEach(async ({ page }) => {
             await library.createTestcase(testcaseName3);
 
             try {
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName1 }).locator('[data-testid^="testcase-row-checkbox"]').filter( { has: page.locator('[value="on"]') } ).click();
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName2 }).locator('[data-testid^="testcase-row-checkbox"]').filter( { has: page.locator('[value="on"]') } ).click();
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName3 }).locator('[data-testid^="testcase-row-checkbox"]').filter( { has: page.locator('[value="on"]') } ).click();
+            await library.selectTestcases({ testcaseName: [testcaseName1, testcaseName2, testcaseName3] });
             await page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName1 }).click({ button: 'right' });
             await page.getByText('Delete All').click();
             await page.getByTestId('confirm-dialog-confirm-btn').click();
@@ -73,8 +69,7 @@ test.beforeEach(async ({ page }) => {
             await library.createTestcase(testcaseName2);
 
             try {
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName1 }).locator('[data-testid^="testcase-row-checkbox"]').filter( { has: page.locator('[value="on"]') } ).click();
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName2 }).locator('[data-testid^="testcase-row-checkbox"]').filter( { has: page.locator('[value="on"]') } ).click();
+            await library.selectTestcases({ testcaseName: [testcaseName1, testcaseName2] });
             await page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName1 }).click({ button: 'right' });
             await page.getByText('Delete All').click();
             await page.getByTestId('confirm-dialog-cancel-btn').click();
@@ -96,8 +91,7 @@ test.beforeEach(async ({ page }) => {
             await library.createTestcase(testcaseName2);
 
             try {
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName1 }).locator('[data-testid^="testcase-row-checkbox"]').filter( { has: page.locator('[value="on"]') } ).click();
-            await page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName2 }).locator('[data-testid^="testcase-row-checkbox"]').filter( { has: page.locator('[value="on"]') } ).click();
+            await library.selectTestcases({ testcaseName: [testcaseName1, testcaseName2] });
             await page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName1 }).click({ button: 'right' });
             await page.getByText('Archive All').click();
             await page.getByTestId('confirm-dialog-cancel-btn').click();

@@ -32,7 +32,7 @@ test.beforeEach(async ({ page }) => {
 
             try {
             await library.findTestcase(testcaseName);
-            await library.rightClickTestcase(testcaseName, "BREAKUP", true, prompt);
+            await library.rightClickTestcase(testcaseName, "BREAKUP", true, {breakUpPrompt: prompt});
             await library.findTestcase(testcaseName);
             await page.locator('[data-testid^="testcase-row-collapse-button"]').click();
             await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName2 })).toBeVisible();
@@ -52,7 +52,7 @@ test.beforeEach(async ({ page }) => {
 
             try {
             await library.findTestcase(testcaseName);
-            await library.rightClickTestcase(testcaseName, "BREAKUP", true, "Make sure to break this testcase into two separate testcases. Make sure one testcase has the name" + testcaseName2 + " and the other has the name" + testcaseName3 + "and make sure that the two child testcases have different names");
+            await library.rightClickTestcase(testcaseName, "BREAKUP", true, {breakUpPrompt: 'Make sure to break this testcase into two separate testcases. Make sure one testcase has the name' + testcaseName2 + 'and the other has the name' + testcaseName3 + 'and make sure that the two child testcases have different names'});
             const brokenUpTestcase = await library.findTestcase(testcaseName);
             await brokenUpTestcase!.locator('[data-testid^="testcase-row-collapse-button"]').click();
             await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName2 })).toBeVisible();
