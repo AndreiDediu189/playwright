@@ -3,7 +3,7 @@ import { IMGUI } from '../../utils/files';
 import { IMGStory } from '../../utils/files';
 import { PDFStory } from '../../utils/files';
 
-test.describe('Analyze page', () => {
+test.describe.serial('Testcase generation', () => {
 test.beforeEach(async ({ page }) => {       
     await page.goto('/analyze');
     await page.waitForLoadState('domcontentloaded');

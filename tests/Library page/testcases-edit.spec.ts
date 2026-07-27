@@ -201,10 +201,33 @@ test.beforeEach(async ({ page }) => {
             await library.findTestcase(testcaseName3);
             await expect(page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName3 }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toContainText('READY');
             }
-
+            
             finally {
             await library.deleteTestcase(testcaseName);
             await library.deleteTestcase(testcaseName2);
             await library.deleteTestcase(testcaseName3);
             }});
-});
+
+
+
+        test('Updated test case reflects immediately in list', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        const testcaseName2 = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName);
+
+
+            try {
+            const testCase = await library.findTestcaseOnPage(testcaseName);
+            testCase?.click();
+            await page.getByTestId('editable-testcase-title-input').fill(testcaseName2);
+            await page.getByTestId('edit-testcase-save-btn').click();
+            await page.getByTestId('alert-dialog-ok-btn').click();
+            await library.findTestcaseOnPage(testcaseName2);
+
+            }
+            
+            finally {
+            await library.deleteTestcase(testcaseName2);
+
+            }});
+}); 
