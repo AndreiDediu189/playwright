@@ -230,4 +230,29 @@ test.beforeEach(async ({ page }) => {
             await library.deleteTestcase(testcaseName2);
 
             }});
+
+
+        test('Testcase priority can be changed', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName);
+
+
+            try {
+            const testCase = await library.findTestcaseOnPage(testcaseName);
+            const testCasePrio = testCase?.locator('[data-testid^="testcase-row-priority"]:not([data-testid^="testcase-row-priority-wrapper"])');
+            testCasePrio?.click();
+            await page.getByRole('option', {name:"LOW"}).click();
+            await expect(testCasePrio!).toContainText("LOW");
+            testCasePrio?.click();
+            await page.getByRole('option', {name:"MEDIUM"}).click();
+            await expect(testCasePrio!).toContainText("MEDIUM");
+            testCasePrio?.click();
+            await page.getByRole('option', {name:"HIGH"}).click();
+            await expect(testCasePrio!).toContainText("HIGH");
+            }
+            
+            finally {
+            await library.deleteTestcase(testcaseName);
+
+            }});
 }); 

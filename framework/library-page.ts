@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 import { config } from './fixtures';
 import type { Locator } from '@playwright/test';
+import { randomUUID } from 'crypto';
 
 
 
@@ -12,7 +13,7 @@ constructor(private page: Page) {}
 
 
 
-async createTestcase(testcaseName: string = 'Default string - Manual testcase for testing. Make sure to delete.', testcaseStory: string = 'PROJ-123', assertion = true) {
+async createTestcase(testcaseName: string = 'Default string - Manual testcase for testing. Make sure to delete.', testcaseStory: string = 'PLAYWRIGHT', assertion = true) {
 
         try {
         await this.page.goto('/testcases');
@@ -152,13 +153,11 @@ async selectTestcases({ testcaseName, assertion = true }: { testcaseName?: Array
         try {
         await expect(this.page).toHaveURL(/testcases/);
 
-        if (testcaseName!.length > 0) {
-
-            for(let i = 0; i < testcaseName!.length; i++) {
+        for(let i = 0; i < testcaseName!.length; i++) {
                 await this.page.locator('[data-testid^=testcase-row]').filter({ hasText: testcaseName!.at(i)?.toString() }).getByRole('checkbox').click();
-                }
-        }
-        }
+        }}
+
+
         catch (e) {
         if (assertion) throw e;
         }
