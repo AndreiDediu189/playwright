@@ -74,6 +74,8 @@ async deleteTestcase(testcaseName: string, assertion = true) {
         }
 }
 
+
+
 async findTestcaseOnPage(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
 
         try {
@@ -233,6 +235,23 @@ async changeTestcaseStatus(testcaseName: string, status: 'DRAFT' | 'READY' | 'IN
         await this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])').click();
         await this.page.getByRole('option', { name: status }).click();
         await expect(this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toHaveText(status);
+        await this.page.getByTestId('testcases-search-input').fill('');
+        }
+
+        catch (e) {
+        if (assertion) throw e;
+        }
+}
+
+async changeTestcasePriority(testcaseName: string, priority: 'LOW' | 'MEDIUM' | 'HIGH', assertion = true) {
+
+        try {
+        await this.page.goto('/testcases');
+        await this.page.getByTestId('testcases-search-input').fill(testcaseName);
+        await expect(this.page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName })).toBeVisible();  
+        await this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-priority"]:not([data-testid^="testcase-row-priority-wrapper"])').click();
+        await this.page.getByRole('option', { name: priority }).click();
+        await expect(this.page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-priority"]:not([data-testid^="testcase-row-priority-wrapper"])')).toHaveText(priority);
         await this.page.getByTestId('testcases-search-input').fill('');
         }
 

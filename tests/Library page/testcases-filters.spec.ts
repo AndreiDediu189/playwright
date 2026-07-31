@@ -16,43 +16,42 @@ test.describe.serial('Non-parallel @manual', () => {
 
             try {
             let statusUpdatedCount = await page.locator('[data-status-key="draft"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
+            expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
             await library.changeTestcaseStatus(testcaseName, 'READY');
             statusUpdatedCount = await page.locator('[data-status-key="draft"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
+            expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
 
             await library.changeTestcaseStatus(testcaseName, 'DRAFT');
             statusCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
             await library.changeTestcaseStatus(testcaseName, 'READY');
             statusUpdatedCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
+            expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
             await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
             statusUpdatedCount = await page.locator('[data-status-key="ready"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
+            expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
 
             await library.changeTestcaseStatus(testcaseName, 'READY');
             statusCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
             await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
             statusUpdatedCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
+            expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
             await library.changeTestcaseStatus(testcaseName, 'COMPLETED');
             statusUpdatedCount = await page.locator('[data-status-key="in_progress"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
+            expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
 
             await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
             statusCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
             await library.changeTestcaseStatus(testcaseName, 'COMPLETED');
             statusUpdatedCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
+            expect(Number(statusUpdatedCount)).toBeGreaterThan(Number(statusCount));
             await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
             statusUpdatedCount = await page.locator('[data-status-key="completed"]').locator('.text-2xl').textContent();
-            await expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
+            expect(Number(statusUpdatedCount)).toBe(Number(statusCount));
             }
 
             finally {
             await library.deleteTestcase(testcaseName);
             }});
-
             });
 
 
@@ -62,19 +61,19 @@ test.describe.serial('Non-parallel @manual', () => {
 
             try {
             await page.locator('[data-status-key="draft"]').click();
-            await library.findTestcase(testcaseName);
+            await library.findTestcaseOnPage(testcaseName);
 
             await library.changeTestcaseStatus(testcaseName, 'READY');
             await page.locator('[data-status-key="ready"]').click();
-            await library.findTestcase(testcaseName);
+            await library.findTestcaseOnPage(testcaseName);
 
             await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
             await page.locator('[data-status-key="in_progress"]').click();
-            await library.findTestcase(testcaseName);
+            await library.findTestcaseOnPage(testcaseName);
 
             await library.changeTestcaseStatus(testcaseName, 'COMPLETED');
             await page.locator('[data-status-key="completed"]').click();
-            await library.findTestcase(testcaseName);
+            await library.findTestcaseOnPage(testcaseName);
             }
 
             finally {
@@ -89,21 +88,50 @@ test.describe.serial('Non-parallel @manual', () => {
             try{
             await page.getByTestId('status-filter-select').click();
             await page.getByRole('option', { name: 'Draft' }).click();
-            await library.findTestcase(testcaseName);
+            await library.searchForTestcase(testcaseName);
 
             await library.changeTestcaseStatus(testcaseName, 'READY');
             await page.getByTestId('status-filter-select').click();
             await page.getByRole('option', { name: 'Ready' }).click();
-            await library.findTestcase(testcaseName);
+            await library.searchForTestcase(testcaseName);
 
             await library.changeTestcaseStatus(testcaseName, 'IN PROGRESS');
             await page.getByTestId('status-filter-select').click();
-            await page.getByRole('option', { name: 'completed' }).click();
-            await library.findTestcase(testcaseName);
+            await page.getByRole('option', { name: 'In Progress' }).click();
+            await library.searchForTestcase(testcaseName);
 
             await library.changeTestcaseStatus(testcaseName, 'COMPLETED');
             await page.getByTestId('status-filter-select').click();
-            await library.findTestcase(testcaseName);
+            await page.getByRole('option', { name: 'Completed' }).click();
+            await library.searchForTestcase(testcaseName);
+            }
+
+            finally {
+            await library.deleteTestcase(testcaseName);
+            }});
+
+
+        test('Filtering by priority dropdown @P2', async ({ page, library }) => {
+            const testcaseName = `playwright-${randomUUID()}`;
+            await library.createTestcase(testcaseName);
+
+            try{
+            const testcase = await library.findTestcaseOnPage(testcaseName);
+            await testcase?.locator('[data-testid^="testcase-row-priority"]:not([data-testid^="testcase-row-priority-wrapper"])').click();
+            await page.getByRole('option', { name: 'LOW' }).click();
+            await page.getByTestId('priority-filter-select').click();
+            await page.getByRole('option', { name: 'LOW' }).click();
+            await library.searchForTestcase(testcaseName);
+
+            await library.changeTestcasePriority(testcaseName, 'MEDIUM');
+            await page.getByTestId('priority-filter-select').click();
+            await page.getByRole('option', { name: 'MEDIUM' }).click();
+            await library.searchForTestcase(testcaseName);
+
+            await library.changeTestcasePriority(testcaseName, 'HIGH');
+            await page.getByTestId('priority-filter-select').click();
+            await page.getByRole('option', { name: 'HIGH' }).click();
+            await library.searchForTestcase(testcaseName);
             }
 
             finally {

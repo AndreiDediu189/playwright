@@ -19,7 +19,7 @@ test.beforeEach(async ({ page }) => {
             await page.locator('[data-testid^="file-description-"]').pressSequentially(randomUUID());
             }
             const description = await page.locator('[data-testid^="file-description-"]').inputValue();
-            await expect(description.length).toBe(500);
+            expect(description.length).toBe(500);
 
         });
 
