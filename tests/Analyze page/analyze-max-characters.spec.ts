@@ -18,6 +18,7 @@ test.beforeEach(async ({ page }) => {
             while(!(await page.getByText('0 chars left', {exact:true}).isVisible())) {
             await page.locator('[data-testid^="file-description-"]').pressSequentially(randomUUID());
             }
+            await page.locator('[data-testid^="file-description-"]').pressSequentially(randomUUID());
             const description = await page.locator('[data-testid^="file-description-"]').inputValue();
             expect(description.length).toBe(500);
 
@@ -31,7 +32,9 @@ test.beforeEach(async ({ page }) => {
             while(!(await page.getByText('0 chars left', {exact:true}).isVisible())) {
             await page.locator('[data-testid^="file-description-"]').pressSequentially(randomUUID());
             }
-
+            await page.locator('[data-testid^="file-description-"]').pressSequentially(randomUUID());
+            const description = await page.locator('[data-testid^="file-description-"]').inputValue();
+            expect(description.length).toBe(500);
         });
 
 
@@ -41,7 +44,9 @@ test.beforeEach(async ({ page }) => {
             while(!(await page.getByText('0 chars left', {exact:true}).isVisible())) {
             await page.locator('[data-testid^="file-description-"]').pressSequentially(randomUUID());
             }
-
+            await page.locator('[data-testid^="file-description-"]').pressSequentially(randomUUID());
+            const description = await page.locator('[data-testid^="file-description-"]').inputValue();
+            expect(description.length).toBe(500);
         });
 
 
