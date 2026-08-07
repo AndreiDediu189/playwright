@@ -76,7 +76,7 @@ async deleteTestcase(testcaseName: string, assertion = true) {
 
 
 
-async findTestcaseOnPage(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
+async findTestcaseOnPage(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator> {
 
         try {
 
@@ -89,12 +89,13 @@ async findTestcaseOnPage(testcaseName: string, assertion = true, locator: "ROW" 
         await expect(this.page.locator('[data-rfd-draggable-context-id]').filter({ hasText: testcaseName })).toBeVisible();
         return this.page.locator('[data-rfd-draggable-context-id]').filter({ hasText: testcaseName });
         }
-        else return null;
+        else throw new Error(`This error is unreachable but needed for syntax`);
         }
 
         catch (e) {
         if (assertion) throw e;
-        return null;
+        else throw new Error(`Testcase not found: ${testcaseName}`);
+
         }
 }
 
@@ -123,7 +124,7 @@ async searchForTestcase(testcaseName: string, assertion = true, locator: "ROW" |
         }
 }
 
-async findTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
+async goToSearchForTestcase(testcaseName: string, assertion = true, locator: "ROW" | "TITLE" = "ROW"): Promise<Locator | null> {
 
         try {
 

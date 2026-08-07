@@ -48,7 +48,7 @@ test.beforeEach(async ({ page }) => {
             await page.getByTestId('edit-testcase-delete-btn').click();
             await page.getByTestId('confirm-dialog-confirm-btn').click();
             await expect(page.getByTestId('confirm-dialog-confirm-btn')).not.toBeVisible();
-            await library.findTestcase(testcaseName1, false);
+            await library.searchForTestcase(testcaseName1, false);
             await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName1 })).not.toBeVisible();
             }
 
@@ -82,8 +82,8 @@ test.beforeEach(async ({ page }) => {
         await library.createTestcase(testcaseName);
 
             try {
-            const testCase = await library.findTestcase(testcaseName);
-            await testCase?.click({button:'right'});
+            const testCase = await library.searchForTestcase(testcaseName);
+            await testCase!.click({button:'right'});
             await page.getByRole('menuitem', {name: 'Archive'}).click();
             await expect(page.locator('[data-testid^="testcase-row-title"]').filter({hasText: testcaseName})).not.toBeVisible();
             await page.getByTestId('toggle-archived-btn').click();
@@ -194,11 +194,11 @@ test.beforeEach(async ({ page }) => {
             await (await library.findTestcaseOnPage(testcaseName2))!.locator('[data-testid^=testcase-row-checkbox][type=button]').click();
             await (await library.findTestcaseOnPage(testcaseName3))!.locator('[data-testid^=testcase-row-checkbox][type=button]').click();
             await library.rightClickTestcase(testcaseName, "BULK CHANGE STATUS", true, {status:'READY'} );
-            await library.findTestcase(testcaseName);
+            await library.searchForTestcase(testcaseName);
             await expect(page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toContainText('READY');
-            await library.findTestcase(testcaseName2);
+            await library.searchForTestcase(testcaseName2);
             await expect(page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName2 }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toContainText('READY');
-            await library.findTestcase(testcaseName3);
+            await library.searchForTestcase(testcaseName3);
             await expect(page.locator('[data-testid^="testcase-row-"]').filter({ hasText: testcaseName3 }).locator('[data-testid^="testcase-row-status"]:not([data-testid^="testcase-row-status-wrapper"])')).toContainText('READY');
             }
             
@@ -218,7 +218,7 @@ test.beforeEach(async ({ page }) => {
 
             try {
             const testCase = await library.findTestcaseOnPage(testcaseName);
-            testCase?.click();
+            testCase!.click();
             await page.getByTestId('editable-testcase-title-input').fill(testcaseName2);
             await page.getByTestId('edit-testcase-save-btn').click();
             await page.getByTestId('alert-dialog-ok-btn').click();
@@ -239,16 +239,39 @@ test.beforeEach(async ({ page }) => {
 
             try {
             const testCase = await library.findTestcaseOnPage(testcaseName);
-            const testCasePrio = testCase?.locator('[data-testid^="testcase-row-priority"]:not([data-testid^="testcase-row-priority-wrapper"])');
-            testCasePrio?.click();
+            const testCasePrio = testCase!.locator('[data-testid^="testcase-row-priority"]:not([data-testid^="testcase-row-priority-wrapper"])');
+            testCasePrio!.click();
             await page.getByRole('option', {name:"LOW"}).click();
             await expect(testCasePrio!).toContainText("LOW");
-            testCasePrio?.click();
+            testCasePrio!.click();
             await page.getByRole('option', {name:"MEDIUM"}).click();
             await expect(testCasePrio!).toContainText("MEDIUM");
-            testCasePrio?.click();
+            testCasePrio!.click();
             await page.getByRole('option', {name:"HIGH"}).click();
             await expect(testCasePrio!).toContainText("HIGH");
+            }
+            
+            finally {
+            await library.deleteTestcase(testcaseName);
+
+            }});
+
+
+
+            
+        test('User can unarchive a test case from the row context menu in archived view', async ({ page, library }) => {
+        const testcaseName = `playwright-${randomUUID()}`;
+        await library.createTestcase(testcaseName);
+
+
+            try {
+            const testCase = await library.searchForTestcase(testcaseName);
+            testCase!.click({ button: 'right' });
+            await page.getByRole('menuitem', { name:'Archive' }).click();
+            page.goto('/archived');
+            await page.getByTestId(/archived-row/).filter({hasText:testcaseName}).getByTestId(/archived-row-unarchive-btn/).click();
+            await library.goToSearchForTestcase(testcaseName);
+            
             }
             
             finally {

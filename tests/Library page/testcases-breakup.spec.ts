@@ -1,6 +1,8 @@
 import { test, expect } from '../../framework/fixtures';
 import { randomUUID } from 'crypto';
 
+
+
 test.describe('Testcases - Breakup', () => {
 test.beforeEach(async ({ page }) => {
     await page.goto('/testcases');
@@ -12,7 +14,7 @@ test.beforeEach(async ({ page }) => {
         await library.createTestcase(testcaseName);
 
             try {
-            const testCase = await library.findTestcase(testcaseName);
+            const testCase = await library.searchForTestcase(testcaseName);
             await testCase?.click({button:'right'});
             await page.getByRole('menuitem', {name:'Break Up'}).click();
             await expect(page.getByTestId('breakup-testcase-modal')).toBeVisible();
@@ -31,9 +33,9 @@ test.beforeEach(async ({ page }) => {
         await library.createTestcase(testcaseName);
 
             try {
-            await library.findTestcase(testcaseName);
+            await library.searchForTestcase(testcaseName);
             await library.rightClickTestcase(testcaseName, "BREAKUP", true, {breakUpPrompt: prompt});
-            await library.findTestcase(testcaseName);
+            await library.searchForTestcase(testcaseName);
             await page.locator('[data-testid^="testcase-row-collapse-button"]').click();
             await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName2 })).toBeVisible();
             await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName3 })).toBeVisible();
@@ -51,9 +53,9 @@ test.beforeEach(async ({ page }) => {
         await library.createTestcase(testcaseName);
 
             try {
-            await library.findTestcase(testcaseName);
+            await library.searchForTestcase(testcaseName);
             await library.rightClickTestcase(testcaseName, "BREAKUP", true, {breakUpPrompt: 'Make sure to break this testcase into two separate testcases. Make sure one testcase has the name' + testcaseName2 + 'and the other has the name' + testcaseName3 + 'and make sure that the two child testcases have different names'});
-            const brokenUpTestcase = await library.findTestcase(testcaseName);
+            const brokenUpTestcase = await library.searchForTestcase(testcaseName);
             await brokenUpTestcase!.locator('[data-testid^="testcase-row-collapse-button"]').click();
             await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName2 })).toBeVisible();
             await expect(page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName3 })).toBeVisible();
@@ -69,7 +71,7 @@ test.beforeEach(async ({ page }) => {
         await library.createTestcase(testcaseName);
 
             try {
-            const testcaseRow = await library.findTestcase(testcaseName);
+            const testcaseRow = await library.searchForTestcase(testcaseName);
             await library.rightClickTestcase(testcaseName,"BREAKUP");
             await expect(testcaseRow!.getByText('BROKEN UP', {exact:false})).toBeVisible();
             await library.rightClickTestcase(testcaseName,"REVERT BREAKUP");

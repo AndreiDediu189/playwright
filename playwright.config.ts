@@ -11,7 +11,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [['allure-playwright', { outputFolder: 'allure-results' }]],
   use: {
-    baseURL: 'https://test-commander.com',
+    baseURL: 'https://test-commander-48a624c6.base44.app',
     trace: 'on-first-retry',
     testIdAttribute: 'data-testid',
   },

@@ -50,11 +50,10 @@ test.beforeEach(async ({ page }) => {
         await library.createTestcase(testcaseName, testcaseStory);
 
             try {
-            await library.findTestcase(testcaseName);
+            await library.searchForTestcase(testcaseName);
             await page.locator('[data-testid^="testcase-row-title-"]').filter({ hasText: testcaseName }).click({ button: 'right' });
             await page.getByRole('menuitem').filter({ hasText: 'Archive' }).click();
-            await library.findTestcase(testcaseName, false);
-            await expect(page.locator('[data-testid^=testcase-row-title]').filter({ hasText: testcaseName })).not.toBeVisible();
+            expect(await library.findTestcaseOnPage(testcaseName, false)).toBeNull();
             await page.getByTestId('testcases-tab-stories').click();
             await page.getByTestId('stories-toggle-archived-btn').click();
             await expect(page.locator('[data-testid^="story-card"]').filter({ hasText: testcaseStory })).toBeVisible();
